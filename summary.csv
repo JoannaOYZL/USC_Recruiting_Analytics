@@ -1,0 +1,91 @@
+Variable,DataType,NAnum,uniqueNum,min,max,mean,Definition,examples
+90041_mi,numeric,1177,5538,0,7809.39812441781,823.411490108206,Distance between 90041 and billing zip code,8.60725613319031//8.87276850260775//14.1121390123524//26.1358137068733//30.4346415537823
+91601_mi,numeric,1177,5543,0,7818.10471625076,827.269451606767,Distance between 91601 and billing zip code,10.9585033337931//17.3128968701819//18.5071571756961//27.0011802112751//36.3946006772984
+92122_mi,numeric,1177,5549,0,7778.66382468084,854.542522676364,Distance between 92122 and billing zip code,76.7127587425843//91.5064023283584//96.109994186416//100.492800923728//102.04126253958
+94607_mi,numeric,1177,5548,0,7943.74864680748,999.365471407741,Distance between 944607 and billing zip code,345.138711879187//348.467633203767//351.040529995193//356.534872052948//370.439711249539
+academic_condition,character,0,2,false,true,,If student was admitted with an academic condition - usually pertaining to <3.0 undergradute work,false//true//NA//NA//NA
+account_id,character,0,17505,0010c00001sFa2zAAC,001a000001ZyNjZAAV,,Unique identifier of account linked to opportunity file,001a000001Hv8beAAB//001a000001Hv8cmAAB//001a000001J4NeYAAV//001a000001J4NgvAAF//001a000001J4NikAAF
+admission_advisor_assignment,character,16090,9,Currently Enrolled,Yessenia Carranza,,Admission Advisor assigned to applicant,Leonard Slutsky//Mallory Ilizaliturri//Mayra Gomez//Yessenia Carranza//NA
+admissions_term_code,character,9953,25,201101,201803,,"Term of admission - year followed by 1, 2, or 3 to indicate, spring, summer, or fall",201303//201403//201503//201801//NA
+age,numeric,2371,59,4,82,32.3817515432099,Age of applicant as calculated from their birth date to present,29//30//35//37//40
+application_cleaned_date,POSIXct|POSIXt,11310,593,1361923200,1533600000,1432670493.63375,Date their application was processed after receiving,1364169600//1366243200//1366675200//1368489600//1438646400
+application_received_date,POSIXct|POSIXt,5748,1577,1326412800,1528675200,1430675884.68173,Date their application was received,1357516800//1357862400//1362960000//1363219200//1363305600
+application_term,character,3089,15,Fall 2013,Summer 2018,,Term applied to program,Fall 2013//Fall 2014//Fall 2015//Fall 2016//Fall 2018
+billing_country,character,17618,12,CA,USA,,Billing country,China//South Korea//United States//United States of America//NA
+billing_state/province,character,339,157,84003,ZY,,Billing state or province,CA//California//Florida//Indiana//NA
+billing_zip/postal_code,character,240,6250,0,zipcode,,Billing zip or postal code,90007//90059//90274//91007//92649
+birth_date,POSIXct|POSIXt,2371,7450,-1070409600,1391212800,492082533.333333,Date of birth of applicant,263865600//396057600//562896000//592012800//592358400
+campus,character,11098,6,a0Ba000000IWWybEAH,a0Ba000000IWWzAEAX,,Campus of study of applicant,a0Ba000000IWWybEAH//a0Ba000000IWWyqEAH//a0Ba000000IWWyvEAH//a0Ba000000IWWz0EAH//a0Ba000000IWWzAEAX
+campus_-_cleaned,character,11074,6,Orange County Academic Center,Virtual Academic Center,,Campus of study of applicant - duplicate,Orange County Academic Center//San Diego Academic Center//Skirball Academic Center//University Park Campus//Virtual Academic Center
+concentration/department_interest,character,11679,37,AHA Adults and Healthy Aging,Workplace,,"Department of student (there are three within the MSW program - CYF, AMHW,SCI) unofficial (off application)",COPA//Family and Children//Mental Health//Social Work and Business//NA
+current_term,character,9942,3,201802,201803,,Code of current term if student is enrolled,201802//201803//NA//NA//NA
+date_acceptance_letter_sent,POSIXct|POSIXt,12064,253,1361232000,1530057600,1436480486.63594,Date student was sent their decision letter,1365120000//1367539200//1368748800//1370563200//1439510400
+date_returned_from_first_review,POSIXct|POSIXt,11832,599,1358035200,1529971200,1434781478.77196,Date first reviewer finished file review,1362268800//1364688000//1366243200//1367884800//1369958400
+date_returned_from_second_review,POSIXct|POSIXt,14863,435,1360540800,1935360000,1426804320,Date second reviewer finished file review,1363910400//1364860800//1367193600//1368057600//NA
+date_sent_for_gia_review,POSIXct|POSIXt,16206,91,1479168000,1529366400,1505074715.4339,Date application file was sent to Graduate Admissions for review,1488240000//1512518400//1513036800//1520985600//NA
+date_sent_to_first_review,POSIXct|POSIXt,11791,457,1325635200,1529452800,1434053307.2407,Date application was sent to first reviewer,1362096000//1364515200//1365465600//1367884800//1369094400
+date_sent_to_second_review,POSIXct|POSIXt,14782,348,1360022400,1529971200,1426316066.47564,Date application was sent to second reviewer,1363305600//1364774400//1366588800//1368057600//NA
+decision,character,11694,9,1st Tier Admit,Wait List,,The decision rendered on the application file,2nd Tier Admit//Deny//Exit//Exit to VAC//Wait List
+decision_comments,character,16670,993,"{ Mehraein: First Reviewer total score is 19 but the reviewer chose Qualified by mistake. So, I sent it to the second reviewer. However, I shouldn't have sent it to the second reviewer and I just changed the First Reviewer Assessment from Qualified to Highly Qualified.}",writing was not impressive.,,Comments of application decision,"Great SW exp, but grades are bad!  Unless it is a mistake. 
+
+JA, 3.10.15//pending GPA but admit//Request a stronger letter that discusses her motivation in social work
+APH - student will turn in new letter by Friday. Janine, she wanted to speak to someone to receive further details on this, can you please contact her? Thanks, Amber//writing res. required//NA"
+decision_date,POSIXct|POSIXt,11771,507,1351641600,1530057600,1436169239.53186,Date of the admit or deny decision for their application,1364947200//1366761600//1370476800//1373328000//1439510400
+degree_posted,POSIXct|POSIXt,13075,1220,139708800,32391792000,1358269984.15842,When their undergraduate degree conferred,1167955200//1182643200//1274400000//1296432000//NA
+department,character,13459,4,AMHW,SCI,,"Department of student (there are three within the MSW program - CYF, AMHW,SCI) Official",AMHW//CYF//SCI//NA//NA
+department_student_(account),character,13461,4,AMHW,SCI,,The official department of the student once they are enrolled,AMHW//CYF//SCI//NA//NA
+deposit_received,character,0,2,false,true,,Date deposit of applicant committing to program was received by school,false//true//NA//NA//NA
+deposit_received_date,POSIXct|POSIXt,14102,949,1354665600,1529884800,1438860941.53363,Date the school received their commitment deposit to attend the program,1366675200//1368748800//1381968000//1439510400//NA
+distance_to_campus,numeric,1177,5548,0,7816.52078460081,826.252266669477,Distance between campus and billing zip,0.57267473473104//6.62731860767084//15.3759197012339//17.5097398683932//25.7777002898299
+enrolled_post_ad/drop,character,0,1,false,false,,"If the student persisted past the first three weeks of classes in their first term - this field indicates whether the school would receive tuition revenue, but isn't working.  DISREGARD",false//NA//NA//NA//NA
+ethnicity,character,2371,9,African American,Unknown,,Ethnicity of applicant,African American//Asian/Pacific Islander//Caucasian//Latino/a//Unknown
+file_status,character,11140,4,Complete,Incomplete,,Status of their application file such as complete or exit - meaning they withdrew before a decision was rendered,Complete//Exit//Incomplete//NA//NA
+file_status_completed_date,POSIXct|POSIXt,11167,1237,1325462400,7380460800,1436259798.2238,Date their application file was completed,1359417600//1360627200//1363219200//1368403200//1373328000
+first_enrolled_code,character,9954,63,198303,201803,,Code of first term student enrolled,201203//201303//201403//201503//NA
+first_enrolled_term,character,9942,46,198301,201803,,Name of first term student enrolled,201303//201403//201503//201801//NA
+first_generation,character,920,3,No,Yes,,Does the student identify as a first generation college student,No//Yes//NA//NA//NA
+first_review_exp,numeric,11819,6,1,5,3.146625163827,First reviewer score for experience,2//3//4//5//NA
+first_review_general_comments,character,12770,4479,"'-She shares growing up in a domestic violence home, but no discussion on what services she received.
+-She is highly motivated and might perform well  as a part-time student in the COPA concentration.
+-Several low undergraduate grades in Math.",Zyra is a qualified candidate on the premise of her academic achievement. She lacks commitment to the field of social work. She does have research experience. It is recommended for her to be admitted on a part-time basis.,,General comments of first reviewer,"I have met this applicant several times in the recruitment period and he is quite the dynamic student.  perhaps if we had more background for his GPA, we could admit him.  I believe he would be a wonderful addition to the student body.  perhaps part-time program?//I would have given the applicant a 4 or 5 in the GPA if I knew the equivalent of the HP, P, and LP grading system. For now, I am giving the applicant a 4. If someone can figure the GPA, that would be great.  I strongly recommend admission at the Tier 2 level.//If accepted in our program, most likely this candidate will struggle. Students with such a low GPA should not be admitted.//reasonably good candidate, may still be enrolled in another school.//This student requires additional help in writing and additional experience.  I would not admit."
+first_review_gpa,numeric,11818,7,1,5,3.78892710892711,First reviewer score for GPA (undergrad and grad),1//2//3//4//NA
+first_review_lor,numeric,11821,6,1,5,3.71402818747952,First reviewer score for letters of recommendation,2//3//4//5//NA
+first_review_sop,numeric,11818,8,1,7,4.10548730548731,First reviewer score for statement of purpose,2//3//4//5//NA
+first_review_total,numeric,11821,18,4,20,14.7543428384136,First reviewer total score,8//11//13//14//NA
+first_reviewer_id,character,11817,76,0030c00002dA3SPAA0,003a000002NHWtrAAH,,Unique identifier of first faculty reviewer of application,0033000001HMZTqAAP//003a000001hRghxAAC//003a000001hSHCaAAO//003a000001hSHMwAAO//NA
+follow_up_required,character,0,2,false,true,,Indicates if Director of Admissions needs follow up from applicant before decision,false//true//NA//NA//NA
+gender,character,172,4,Female,Other,,Gender of applicant,Female//Male//Other//NA//NA
+gia_review_date,POSIXct|POSIXt,11721,688,1324857600,4226947200,1435241888.93905,Date Graduate Admissions reviewed application file,1361232000//1361318400//1365465600//1367366400//1369094400
+graduate_gpa,numeric,17430,129,0.9,4.69,3.53805273833671,USC calculated GPA of graduate study,3.09//3.35//3.67//3.7//NA
+last_60/90_gpa,numeric,16486,187,0,4.03,2.86053583855254,USC calculated GPA of last 60 or 90 units of undergraduate study,0//2.2//2.25//2.94//NA
+last_enrolled_code,character,9953,31,199501,201803,,Code of last term student enrolled,201501//201503//201601//201801//NA
+last_enrolled_term,character,9942,31,199501,201803,,Name of last term student enrolled,201501//201503//201601//201801//NA
+opportunity_id,character,0,17923,0060c00001OwcP3AAJ,006a000001P0ZKCAA3,,Unique Identifier,006a000000ys34TAAQ//006a000000ys35ZAAQ//006a000000zHwOIAA0//006a000000zHwQgAAK//006a000000zHwSbAAK
+post_code,character,143,18,1130,Fall 2015,,"Post code of student -meaning program of study - 1411 is virtual MSW, 272 is PhD, 1632 is Nursing, 1645 is DSW, the rest are campus MSW with the majority being 264.  THIS IS AN IMPORTANT FIELD",1411//1447//1645//264//NA
+post_code_(account),character,143,18,1130,Fall 2015,,"Post code of student -meaning program of study - 1411 is virtual MSW, 272 is PhD, 1632 is Nursing, 1645 is DSW, the rest are campus MSW with the majority being 264.  THIS IS AN IMPORTANT FIELD - duplicate with other post code field",1411//1447//1645//264//NA
+post_code_expired,character,0,2,false,true,,Prior post code (such as if they switched from virtual to campus MSW program),false//true//NA//NA//NA
+processing_complete_date,POSIXct|POSIXt,16962,168,1487721600,1529539200,1516455039.33403,Date file finished processing,1512345600//1512432000//1520380800//1521590400//NA
+program_length,character,11139,9,2 years,8 Semester,,"Program length of study (typically 3, 4, 5, 6, or 8 semesters with 3 and 5 being Advanced Standing)",3 Semester//4 Semester//6 Semester//8 Semester//NA
+ready_for_director_review,character,0,2,false,true,,Checkbox indicating if the file is ready for review by Director of Admissions,false//true//NA//NA//NA
+registered_units_(account),numeric,6461,18,0,17,1.95768626766707,Number of units student is currently registered for,0//6//8//11//NA
+residency,character,539,12,Citizen,US Citizen,,Residency of applicant,Citizen//International//Non Resident//Permanent Resident//U.S. Citizen
+response,character,12194,6,Confirmed,Withdrawn,,Applicant's response to decision,Confirmed//Deferred//VAC Switch//Withdrawn//NA
+response_date,POSIXct|POSIXt,12239,1083,1360800000,1530057600,1439724621.53413,Date student responded to their file decision (such as confirm or withdraw),1366588800//1366761600//1377043200//1440979200//NA
+second_review_exp,numeric,14864,7,1,13,2.9274272638117,Second reviewer score for experience,1//3//4//5//NA
+second_review_general_comments,character,15449,2193,;I have no reservations about her entry as f/t student and feel she is well prepared and will be successful.,Yue is a qualified candidate. She demonstrates great academic aptitude. She lacks experience in the field but is passionate about social work.,,General comments of second reviewer,Good thinker and should shine academically  Also will do well in field. Survived and recovered from eating disorder and addictions.  Should add to cohort.//Her statement of purpose and gpa leave a lot to be desired.//I do not recommend this applicant to the MSW program. See explanations in each section above.//Parents/siblings are alumni//NA
+second_review_gpa,numeric,14865,6,1,5,3.50719424460432,Second reviewer score for GPA (undergrad and grad),1//2//3//4//NA
+second_review_lor,numeric,14867,6,1,5,3.59325916230367,Second reviewer score for letters of recommendation,1//2//3//5//NA
+second_review_sop,numeric,14866,9,0,7,3.86686293752045,Second reviewer score for statement of purpose,1//2//3//5//NA
+second_review_total,numeric,14869,18,5,22,13.8958742632613,Second reviewer total score,5//9//15//17//NA
+second_reviewer_id,character,14796,63,0030c00002dA3SPAA0,003a000002NHWtrAAH,,Unique identifier of second faculty reviewer of application,0033000001HMZThAAP//0033000001HMZUFAA5//003a000001hRiELAA0//003a000001hRkpfAAC//NA
+self_reported_gpa,numeric,8135,359,0,96.7,3.31259823252963,Undergraduate GPA submitted by application,1.71//2.47//61//78//NA
+sip_comments,character,17885,39,1/15 Suh Chen and Michal Sela Amit met the prospect and recommended to program.,"Wendy Smith recommended this applicant and recommends for UFC
+I am writing on behalf of a USC senior who has applied to our MSW program.  I know her well, from her residence at the United Friends of the Children transitional housing program, and from USC",,Comments of internal recommendation,"Daughter of Dr. Barry Halote, donor. Per email from Sue Habuni o Feb 3, 2016//John S. Brekke, PhD - sent email to Janine introducing the student. He met with her and felt as if she would be a great asset to our program.//Magdi El Shahawy, Senior Associate Athletic Director recommended Da'John to Monica E.
+
+JB entered score on 2/5/15//Per Prof. Elyn Saks:
+                My name is Elyn Saks and I am a prof at the USC Gould School of Law.  I just wanted to  put in a good word for Taveeona Harvey who has applied to the USC Social Work School.  I don’t know her well//NA"
+sip_score,character,17875,6,2,6,,Score of internal recommendation,2//3//4//6//NA
+student_id,character,0,17505,0010c00001sFa2zAAC,001a000001ZyNjZAAV,,"Unique Student ID  - can be used instead of opportunity ID, equivalent for this project",001a000001Hv8beAAB//001a000001Hv8cmAAB//001a000001J4NeYAAV//001a000001J4NgvAAF//001a000001J4NikAAF
+temperature,character,16694,5,Cold,Warm,,USC indicated liklihood of applicant to matriculate,Cold//Hot//No Contact//Warm//NA
+undergrad_institution_(self_reported),character,16202,615,ABU Nigeri,ZUMC,,Applicant's reported undergraduate institution,CSULA//CSUN//In progres//POC//NA
+undergraduate_gpa,numeric,11701,204,0,4,3.24942462230794,Undergraduate GPA calculated by USC,0//1.32//2//2.01//2.12

@@ -7,7 +7,6 @@ library(ggplot2)
 library(data.table)
 library(plyr)
 library(dplyr)
-setwd("C:/Users/ctrintern/Desktop/Joanna's folder/other")
 
 data = read_excel("Case #2 - USC Recruiting Strategy Case - DATA - sept 2018.xlsx")
 codebook = read_excel("CASE #2 - Recruiting Strategy CodeBook9.5.18.xlsx")

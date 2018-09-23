@@ -1,0 +1,594 @@
+---
+title: "EDA-Recruiting Case"
+output: html_notebook
+---
+
+```{r}
+# Loading necessary packages and datasets
+library(readr)
+library(readxl)
+library(stringr)
+library(lubridate)
+library(ggplot2)
+library(data.table)
+library(plyr)
+library(dplyr)
+library(scales)
+
+data = read_excel("Case #2 - USC Recruiting Strategy Case - DATA - sept 2018.xlsx")
+codebook = read_excel("CASE #2 - Recruiting Strategy CodeBook9.5.18.xlsx")
+
+# Replacing all special character in the column names to underline "_" or simply remove them
+colnames(data) = gsub("-", "_", colnames(data))
+colnames(data) = gsub(" ", "_", colnames(data))
+colnames(data) = gsub("/", "_", colnames(data))
+colnames(data) = gsub("\\(", "", colnames(data))
+colnames(data) = gsub("\\)", "", colnames(data))
+
+codebook$Field = gsub("-", "_", codebook$Field)
+codebook$Field = gsub(" ", "_", codebook$Field)
+codebook$Field = gsub("\\(", "", codebook$Field)
+codebook$Field = gsub("\\)", "", codebook$Field)
+
+# Replace "-" in "sip_score" and "sip_comments" with NA
+data$sip_comments[data$sip_comments == "-"] = NA
+data$sip_score[data$sip_score == "-"] = NA
+```
+
+## PART 1: Dataset Overview
+```{r}
+# Creating summary statistics table
+summary = data.frame(Variable = colnames(data))
+summary$DataType = sapply(data, class)                             # Creating column "DataType" to indicate all variables' data type
+summary$NAnum = sapply(data, function(x){sum(is.na(x))})           # Creating column "NAnum" to count the number of NAs in each variable
+summary$uniqueNum = sapply(data, function(x){length(unique(x))})   # Creating column "uniqueNum" to count the number of unique values in each variable
+summary$min = sapply(data, min, na.rm = TRUE)                      # Creating column "min" to indicate all variables' minimum value (only meaningful for numeric values)
+summary$max = sapply(data, max, na.rm = TRUE)                      # Creating column "max" to indicate all variables' maximum value (only meaningful for numeric values)
+summary$mean = sapply(data, mean, na.rm = TRUE)                    # Creating column "meab" to indicate all variables' mean (only meaningful for numeric values)
+
+# Join variable definitions in codebook to summary statistics table
+summary = merge(summary, codebook, by.x = "Variable", by.y = "Field")
+
+# List 5 examples of the field values for each variable
+example = sapply(data, function(x){sort(unique(x)[1:5])})         # extract and sort unique values for each column
+example = ldply(example, rbind)                                   # transform the list into a dataframe
+colnames(example) = c("Variable", "e1", "e2", "e3", "e4", "e5")   # rename the columns
+example$examples = apply(example[,-1], 1, paste, collapse = "//") # paste all the 5 examples for each variable into one column
+summary = merge(summary, example[, c(1, 7)], by = "Variable")     # join the examples to the summary table
+
+# Write the summary statistics into csv file
+#fwrite(summary, "summary.csv")
+```
+
+Since our business objective only deals with 1st tier admitted students, we will only perform cleaning and exploratory analysis on the 1st tier admitted students.
+```{r}
+t1 = data%>%
+  filter(decision == "1st Tier Admit") #not used. Reasons stated below
+```
+
+
+## PART 2: Exploring Data Distribution
+There are altogether 81 variables in the dataset. We will go over each column one by one to understand its details and then decide the corresponding cleaning method.
+
+1. opportunity_id: the unique identifer of each applicant. 
+2. application_term: Term applied to program
+There is a sudden drop in number of applications for 1st tier admit in 2015, so I checked the whole dataset to see if the sudden drop is due to the drop in total number of application, and find that the drop is universal among all students. --> OUR BUSINESS OBJECTIVE MAY NOT BE FEASIBLE!
+```{r}
+# class(t1$application_term) #data type is character
+# 
+# # convert the data type to factor and reorder the level to match actual semesters timeline
+# t1$application_term = as.factor(t1$application_term)
+# levels(t1$application_term) = levels(t1$application_term)[c(7, 1, 8, 2, 9, 3, 10, 4, 5, 6)] 
+# levels(t1$application_term)
+# 
+# # draw the plot
+# ggplot(t1, aes(x = application_term))+
+#   geom_bar(fill="#999999")+
+#   labs(title="Distribution of application_term", 
+#        x="application_term", 
+#        y="Count")+
+#   theme(plot.title = element_text(hjust = 0.5),
+#         axis.text.x = element_text(angle = 45, hjust = 1))
+
+# convert the data type to factor and reorder the level to match actual semesters timeline
+data$application_term = as.factor(data$application_term)
+levels(data$application_term) = levels(data$application_term)[c(10, 1, 11, 2, 7, 12, 3, 8, 13, 4, 5, 9, 14, 6)]
+
+# draw the plot (grey is all students, red is 1st tier students)
+data%>%
+  filter(!is.na(application_term))%>%
+  ggplot(aes(x = application_term))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of application_term (for all applications)", 
+       x="application_term", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))+
+  geom_bar(data = t1, fill="red")+
+  labs(title="Distribution of application_term (for all applications)", 
+       x="application_term", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+# draw the count for students who confirmed offer
+data%>%
+  filter(response == "Confirmed")%>%
+  ggplot(aes(x = application_term))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of application_term (for confirmed stduents)", 
+       x="application_term", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+So we performed the rest of the EDA, on the entire dataset
+3. degree_posted: When their undergraduate degree conferred
+1 outlier 
+```{r}
+# draw the plot
+data%>%
+  filter(degree_posted < "2019-01-01")%>%
+  ggplot(aes(x = degree_posted))+
+  geom_point(stat = "count")+
+  labs(title = 'Distribution of undergraduate degree conferred date')+
+  theme(plot.title = element_text(hjust = 0.5),
+         text = element_text(size=15))
+```
+
+4. application_received_date: Date their application was received
+many NAs
+```{r}
+# aggregated
+data%>%
+  filter(!is.na(application_received_date))%>%
+  ggplot(aes(x = as.factor(month(application_received_date))))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of application_received_date (agg. to months)',
+       x = "month")+
+  theme(plot.title = element_text(hjust = 0.5),
+         text = element_text(size = 15))
+
+# across all years
+data%>%
+  filter(!is.na(application_received_date))%>%
+  ggplot(aes(x = application_received_date))+
+  geom_point(stat = "count")+
+  labs(title = 'Distribution of application_received_date',
+       x = "time")+
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(size = 15))
+```
+
+5. file_status_completed_date: Date their application file was completed
+
+```{r}
+# aggregated to months
+data%>%
+  filter(file_status_completed_date < "2019-01-01")%>%
+  ggplot(aes(x = as.factor(month(file_status_completed_date))))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of file_status_completed_date (agg. to months)',
+       x = "month")+
+  theme(plot.title = element_text(hjust = 0.5),
+         text = element_text(size = 15))
+
+# across all years
+data%>%
+  filter(file_status_completed_date < "2019-01-01")%>%
+  ggplot(aes(x = file_status_completed_date))+
+  geom_point(stat = "count")+
+  labs(title = 'Distribution of file_status_completed_date',
+       x = "time")+
+  theme(plot.title = element_text(hjust = 0.5),
+         text = element_text(size = 15))
+```
+
+6. decision_date: Date of the admit or deny decision for their application
+There is one outlier in this field and is apparently a typo, which is excluded from the dataset
+```{r}
+# draw the plot
+data%>%
+  filter(decision_date < "2019-01-01")%>%
+  ggplot(aes(x = as.factor(month(decision_date))))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of decision_date',
+       x = "month")+
+  theme(plot.title = element_text(hjust = 0.5),
+         text = element_text(size = 15))
+
+# across all years
+data%>%
+  filter(decision_date < "2019-01-01")%>%
+  ggplot(aes(x = decision_date))+
+  geom_point(stat = "count")+
+  labs(title = 'Distribution of decision_date',
+       x = "time")+
+  theme(plot.title = element_text(hjust = 0.5),
+         text = element_text(size = 15))
+```
+
+7. application_cleaned_date: Date their application was processed after receiving
+```{r}
+# draw the plot
+data%>%
+  filter(!is.na(application_cleaned_date))%>%
+  ggplot(aes(x = as.factor(month(application_cleaned_date))))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of application_cleaned_date',
+       x = "month")+
+  theme(plot.title = element_text(hjust = 0.5),
+         text = element_text(size = 15))
+
+# across all years
+data%>%
+  filter(!is.na(application_cleaned_date))%>%
+  ggplot(aes(x = application_cleaned_date))+
+  geom_point(stat = "count")+
+  labs(title = 'Distribution of application_cleaned_date',
+       x = "time")+
+  theme(plot.title = element_text(hjust = 0.5),
+         text = element_text(size = 15))
+```
+
+8. deposit_received_date
+```{r}
+# draw the plot
+data%>%
+  filter(!is.na(deposit_received_date))%>%
+  ggplot(aes(x = as.factor(month(deposit_received_date))))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of deposit_received_date',
+       x = "month")+
+  theme(plot.title = element_text(hjust = 0.5),
+         text = element_text(size = 15))
+
+# across all years
+data%>%
+  filter(!is.na(deposit_received_date))%>%
+  ggplot(aes(x = deposit_received_date))+
+  geom_point(stat = "count")+
+  labs(title = 'Distribution of deposit_received_date',
+       x = "time")+
+  theme(plot.title = element_text(hjust = 0.5),
+         text = element_text(size = 15))
+```
+
+9. department: Department of students
+```{r}
+# draw the plot and exclude all NAs (many NAs)
+data%>%
+  filter(!is.na(department))%>%
+  ggplot(aes(x = department))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of department')+
+  theme(plot.title = element_text(hjust = 0.5),
+         text = element_text(size = 15))
+```
+
+10. undergraduate_gpa: calculated by USC
+```{r}
+#plot
+data%>%
+  filter(undergraduate_gpa != 0)%>%
+  ggplot(aes(x = undergraduate_gpa))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of undergraduate_gpa')+
+  theme(plot.title = element_text(hjust = 0.5),
+         text = element_text(size = 15))
+```
+
+11. self_reported_gpa
+Outliers with self reported gpa greater than 5 and equals to 0 (should be cleaned)
+```{r}
+#plot
+data%>%
+  filter(self_reported_gpa <= 4 & self_reported_gpa != 0)%>%
+  ggplot(aes(x = self_reported_gpa))+
+  geom_point(stat = "count")+
+  labs(title = 'Distribution of self_reported_gpa')+
+  theme(plot.title = element_text(hjust = 0.5),
+         text = element_text(size = 15))
+
+#plot self_reported_gpa with undergraduate gpa calculted by USC
+data%>%
+  filter(self_reported_gpa <= 4 & self_reported_gpa != 0)%>%
+  filter(undergraduate_gpa != 0)%>%
+  ggplot(aes(x = undergraduate_gpa))+
+  geom_bar(fill = "#999999")+
+  geom_point(aes(x = self_reported_gpa), stat = "count", color = "red")+
+    labs(title = 'self_reported_gpa (red) against undergraduate_gpa')+
+  theme(plot.title = element_text(hjust = 0.5),
+         text = element_text(size = 15))
+```
+
+12. first_reviewer_id
+```{r}
+#plot
+data%>%
+  filter(!is.na(first_reviewer_id))%>%
+  ggplot(aes(x = first_reviewer_id))+
+  geom_point(stat = "count")+
+  labs(title = 'Distribution of first_reviewer_id')+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+13. first_review_exp: First reviewer score for experience
+```{r}
+data%>%
+  ggplot(aes(x = first_review_exp))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of first_review_exp')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+14. first_review_sop: First reviewer score for statement of purpose
+```{r}
+data%>%
+  ggplot(aes(x = first_review_sop))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of first_review_sop')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+15. first_review_gpa: First reviewer score for GPA (undergrad and grad)
+```{r}
+data%>%
+  ggplot(aes(x = first_review_gpa))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of first_review_gpa')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+16. first_review_lor: letters of recommendation
+```{r}
+data%>%
+  ggplot(aes(x = first_review_lor))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of first_review_lor')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+17. first_review_total: total score
+```{r}
+data%>%
+  ggplot(aes(x = first_review_total))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of first_review_total')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+18. second_reviewer_id
+```{r}
+#plot
+data%>%
+  filter(!is.na(second_reviewer_id))%>%
+  ggplot(aes(x = second_reviewer_id))+
+  geom_point(stat = "count")+
+  labs(title = 'Distribution of second_reviewer_id')+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+19. second_review_exp: second reviewer score for experience
+```{r}
+data%>%
+  ggplot(aes(x = second_review_exp))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of second_review_exp')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+20. second_review_sop: second reviewer score for statement of purpose
+```{r}
+data%>%
+  ggplot(aes(x = second_review_sop))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of second_review_sop')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+21. second_review_gpa: second reviewer score for GPA (undergrad and grad)
+```{r}
+data%>%
+  ggplot(aes(x = second_review_gpa))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of second_review_gpa')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+22. concentration/department_interest: Department of student. 
+This one is the unofficial one ("department" is the official one), probably manually filled and thus is very messy. We can directly use 
+
+23. first_review_lor: letters of recommendation
+```{r}
+data%>%
+  ggplot(aes(x = second_review_lor))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of second_review_lor')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+24. second_review_total: total score
+```{r}
+data%>%
+  ggplot(aes(x = second_review_total))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of second_review_total')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+25. billing_state/province
+Manually input data and thus very messy. Lots of inconsistent writing of same geographical location, such as "CA" and "California".
+
+26. billing_zip/postal_code
+
+27. billing_country
+```{r}
+data$billing_country[data$billing_country %in% c("united States", "United", "USA", "United States of America", "CA")] = "United States"
+
+data%>%
+  filter(!is.na(billing_country))%>%
+  group_by(billing_country)%>%
+  summarise(count = n())%>%
+  ggplot(aes(x = reorder(billing_country, -count), y = count))+
+  geom_bar(stat = "identity", fill = "#999999")+
+  labs(title = 'Distribution of billing_country')+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+28. distance_to_campus
+```{r}
+data%>%
+  ggplot(aes(x = distance_to_campus))+
+  geom_point(stat = "count")+
+  labs(title = 'Distribution of distance_to_campus')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+29. program_length
+```{r}
+data$program_length = as.factor(data$program_length)
+levels(data$program_length) = levels(data$program_length)[c(2, 4, 6, 7, 1, 8, 3, 5)]
+
+data%>%
+  filter(!is.na(program_length))%>%
+  ggplot(aes(x = program_length))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of program_length')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+30. student_id (can be used as the unique identifier as "opportunity id")
+
+31. post_code: meaning program of study
+```{r}
+data%>%
+  filter(!is.na(post_code) & !post_code %in% c("Fall 2015", "1645;264", "264;1412", "264;1411", "264;264", "272;264"))%>%
+  group_by(post_code)%>%
+  summarise(count = n())%>%
+  ggplot(aes(x = reorder(post_code, -count), y = count))+
+  geom_bar(stat = "identity", fill = "#999999")+
+  labs(title = 'Distribution of post_code',
+       x = 'post_code')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+32. post_code_expired (whether the applicant switched from another program)
+```{r}
+data%>%
+  ggplot(aes(x = post_code_expired))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of post_code_expired')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+33. file_status
+```{r}
+data%>%
+  ggplot(aes(x = file_status))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of file_status')+
+  theme(plot.title = element_text(hjust = 0.5))
+
+#remove NA
+data%>%
+  filter(!is.na(file_status))%>%
+  ggplot(aes(x = file_status))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of file_status')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+34. birth_date: dob of the applicant
+```{r}
+data%>%
+  filter(!is.na(birth_date) & birth_date < "2000-01-01")%>%
+  ggplot(aes(x = as.factor(year(birth_date))))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of birth_date',
+       x = 'birth_date (year)')+
+  scale_x_discrete(breaks = seq(1930, 2000, by = 10))+
+  theme(plot.title = element_text(hjust = 0.5),
+         text = element_text(size=15))
+```
+
+35. ethnicity
+```{r}
+data%>%
+  filter(!is.na(ethnicity))%>%
+  group_by(ethnicity)%>%
+  summarise(count = n())%>%
+  ggplot(aes(x = reorder(ethnicity, -count), y = count))+
+  geom_bar(stat = "identity", fill = "#999999")+
+  labs(title = 'Distribution of ethnicity')+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+36. gender
+```{r}
+data%>%
+  filter(!is.na(gender))%>%
+  ggplot(aes(x = gender))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of gender')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+37. campus: Campus of study of applicant
+```{r}
+data%>%
+  filter(!is.na(campus))%>%
+  ggplot(aes(x = campus))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of campus')+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+38. first_generation
+```{r}
+data%>%
+  filter(!is.na(first_generation))%>%
+  ggplot(aes(x = first_generation))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of first_generation')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+39. post_code_account
+```{r}
+data%>%
+  filter(!is.na(post_code) & !post_code %in% c("Fall 2015", "1645;264", "264;1412", "264;1411", "264;264", "272;264"))%>%
+  group_by(post_code_account)%>%
+  summarise(count = n())%>%
+  ggplot(aes(x = reorder(post_code_account, -count), y = count))+
+  geom_bar(stat = "identity", fill = "#999999")+
+  labs(title = 'Distribution of post_code_account',
+       x = 'post_code_account')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+38. registered_units_account
+```{r}
+data%>%
+  filter(!is.na(registered_units_account))%>%
+  ggplot(aes(x = registered_units_account))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of registered_units_account')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+40. department_student_account
+```{r}
+data%>%
+  filter(!is.na(department_student_account))%>%
+  ggplot(aes(x = department_student_account))+
+  geom_bar(fill = "#999999")+
+  labs(title = 'Distribution of department_student_account')+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+

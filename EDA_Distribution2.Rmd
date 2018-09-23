@@ -1,0 +1,456 @@
+---
+title: "EDA-Recruiting Case"
+output: html_notebook
+---
+
+```{r}
+# Loading necessary packages and datasets
+library(readr)
+library(readxl)
+library(stringr)
+library(lubridate)
+library(ggplot2)
+library(data.table)
+library(plyr)
+library(dplyr)
+
+data = read_excel("Case #2 - USC Recruiting Strategy Case - DATA - sept 2018.xlsx")
+codebook = read_excel("CASE #2 - Recruiting Strategy CodeBook9.5.18.xlsx")
+```
+
+## PART 1: Dataset Overview
+```{r}
+# Replacing all spaces in the column names to underline "_"
+colnames(data) = gsub(" ", "_", colnames(data))
+codebook$Field = gsub(" ", "_", codebook$Field)
+
+# Replacing "NA" in sip scores and comments to NA
+data$sip_comments[data$sip_comments == "NA"] = NA
+data$sip_score[data$sip_score == "NA"] = NA
+
+# Creating summary statistics table
+summary = data.frame(Variable = colnames(data))
+summary$DataType = sapply(data, class)                             # Creating column "DataType" to indicate all variables' data type
+summary$NAnum = sapply(data, function(x){sum(is.na(x))})           # Creating column "NAnum" to count the number of NAs in each variable
+summary$uniqueNum = sapply(data, function(x){length(unique(x))})   # Creating column "uniqueNum" to count the number of unique values in each variable
+summary$min = sapply(data, min, na.rm = TRUE)                      # Creating column "min" to indicate all variables' minimum value (only meaningful for numeric values)
+summary$max = sapply(data, max, na.rm = TRUE)                      # Creating column "max" to indicate all variables' maximum value (only meaningful for numeric values)
+summary$mean = sapply(data, mean, na.rm = TRUE)                    # Creating column "meab" to indicate all variables' mean (only meaningful for numeric values)
+
+# Join variable definitions in codebook to summary statistics table
+summary = merge(summary, codebook, by.x = "Variable", by.y = "Field")
+
+# List 5 examples of the field values for each variable
+example = sapply(data, function(x){sort(unique(x)[1:5])})         # extract and sort unique values for each column
+example = ldply(example, rbind)                                   # transform the list into a dataframe
+colnames(example) = c("Variable", "e1", "e2", "e3", "e4", "e5")   # rename the columns
+example$examples = apply(example[,-1], 1, paste, collapse = "//") # paste all the 5 examples for each variable into one column
+summary = merge(summary, example[, c(1, 7)], by = "Variable")     # join the examples to the summary table
+
+# Write the summary statistics into csv file
+fwrite(summary, "summary.csv")
+```
+
+## PART 2: Exploring Data Distribution and Data Cleaning
+There are altogether 81 variables in the dataset. We will go over each column one by one to understand its details and then decide the corresponding cleaning method
+```{r}
+# # Filter out first-tier applicants
+# t1 <- data %>%
+#   filter(decision == "1st Tier Admit")
+
+```
+### Distribution for variables
+# 43 response
+```{r}
+ggplot(data, aes(x=response))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of Response", 
+       x="Response", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 44 academic_condition
+```{r}
+ggplot(data, aes(x=academic_condition))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of Academic_Condition", 
+       x="Academic Condition", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 45 response_date
+```{r}
+ggplot(data, aes(x=response_date)) +
+  geom_point(stat = "count")+
+  labs(title="Distribution of Response Date", 
+       x="Response Date", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 46 date_acceptance_letter_sent
+# Could create the length of time a student respond to his/her offer letter using variable 45 and 46
+```{r}
+ggplot(data, aes(x=date_acceptance_letter_sent)) +
+  geom_point(stat = "count")+
+  labs(title="Distribution of Date_Acceptance_Letter_Sent", 
+       x="Date_Acceptance_Letter_Sent", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 47 campus_-_cleaned
+```{r}
+ggplot(data, aes(x=`campus_-_cleaned`))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of Campus_Cleaned", 
+       x="Campus", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 48 Enrolled_Post_add/drop
+# Not useful
+```{r}
+ggplot(data, aes(x=`enrolled_post_ad/drop`))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of Enrolled_Post_add/drop", 
+       x="Enrolled_Post_add/drop", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 49 sip_score (remove all NAs in this variable)
+```{r}
+data%>%
+  filter(!is.na(sip_score))%>%
+  ggplot(aes(x=sip_score))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of SIP Score", 
+       x="SIP Score", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 51 date_sent_to_first_review
+```{r}
+ggplot(data, aes(x=date_sent_to_first_review)) +
+  geom_point(stat = "count")+
+  labs(title="Distribution of Date_Sent_To_First_Review", 
+       x="Date_Sent_To_First_Review", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 52 date_returned_from_first_review
+# Could create the length of first review time using variable 51 and 52
+```{r}
+ggplot(data, aes(x=date_returned_from_first_review)) +
+  geom_point(stat = "count")+
+  labs(title="Distribution of Date_Returned_From_First_Review", 
+       x="Date_Sent_To_First_Review", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 53 date_sent_to_second_review
+```{r}
+ggplot(data, aes(x=date_sent_to_second_review)) +
+  geom_point(stat = "count")+
+  labs(title="Distribution of Date_Sent_To_Second_Review", 
+       x="Date_Sent_To_Second_Review", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 54 date_returned_from_second_review (remove one obvious outlier)
+# Could create the length of first review time using variable 53 and 54
+```{r}
+data %>%
+  filter(date_returned_from_second_review < "2020-01-01 UTC")%>%
+  ggplot(aes(x=date_returned_from_second_review)) +
+  geom_point(stat = "count")+
+  labs(title="Distribution of Date_Returned_From_Second_Review", 
+       x="Date_Sent_To_Second_Review", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 55 residency
+```{r}
+data$residency = as.factor(data$residency)
+levels(data$residency) = c("US Citizen","International","Non Resident","Non Resident","None",
+                           "Other","Permanent US Resident", "Permanent US Resident",
+                           "Temporary US Resident","US Citizen","US Citizen")
+ggplot(data, aes(x=residency))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of Residency", 
+       x="Residency", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 56 admission_advisor_assignment
+```{r}
+ggplot(data, aes(x=admission_advisor_assignment))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of Admission_Advisor_Assignment", 
+       x="Admission_Advisor_Assignment", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 57 admissions_term_code (01 = Spring, 02 = Summer, 03 = Fall)
+```{r}
+data$admissions_term_code = as.numeric(data$admissions_term_code)
+data%>%
+  filter(admissions_term_code >= 201302)%>%
+  mutate(admissions_term_code = as.factor(admissions_term_code))%>%
+  ggplot(aes(x=admissions_term_code))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of Admissions_Term_Code", 
+       x="Admissions_Term_Code", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 58 first_enrolled_code
+```{r}
+data$first_enrolled_code = as.numeric(data$first_enrolled_code)
+data%>%
+  filter(first_enrolled_code >= 201302)%>%
+  mutate(first_enrolled_code = as.factor(first_enrolled_code))%>%
+  ggplot(aes(x=first_enrolled_code))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of First_Enrolled_Code", 
+       x="First_Enrolled_Code", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# Comparing admissions_term_code and first_enrolled_code
+```{r}
+data%>%
+  filter(first_enrolled_code >= 201302 & admissions_term_code >= 201302)%>%
+  mutate(first_enrolled_code = as.factor(first_enrolled_code),
+         admissions_term_code = as.factor(admissions_term_code))%>%
+  select(first_enrolled_code,admissions_term_code)%>%
+  melt(measure.vars = c("first_enrolled_code", "admissions_term_code"))%>%
+  ggplot (aes(x=value, fill=variable)) + 
+  geom_bar (position = position_dodge())+
+  labs(title="Distribution of First_Enrolled_Code and Admissions_Term_Code", 
+       x="Value", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 59 last_enrolled_code
+```{r}
+data$last_enrolled_code = as.numeric(data$last_enrolled_code)
+data%>%
+  filter(last_enrolled_code >= 201302)%>%
+  mutate(last_enrolled_code = as.factor(last_enrolled_code))%>%
+  ggplot(aes(x=last_enrolled_code))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of Last_Enrolled_Code", 
+       x="Last_Enrolled_Code", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 60 first_enrolled_term (Almost identical to first_enrolled_code, has 12 more data points)
+```{r}
+data$first_enrolled_term = as.numeric(data$first_enrolled_term)
+data%>%
+  filter(first_enrolled_term >= 201302)%>%
+  mutate(first_enrolled_term = as.factor(first_enrolled_term))%>%
+  ggplot(aes(x=first_enrolled_term))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of First_Enrolled_Term", 
+       x="First_Enrolled_Term", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 61 last_enrolled_term(Almost identical to last_enrolled_code, has 11 more data points)
+```{r}
+data$last_enrolled_term = as.numeric(data$last_enrolled_term)
+data%>%
+  filter(last_enrolled_term >= 201302)%>%
+  mutate(last_enrolled_term = as.factor(last_enrolled_term))%>%
+  ggplot(aes(x=last_enrolled_term))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of Last_Enrolled_Term", 
+       x="Last_Enrolled_Term", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 62 current_term
+```{r}
+ggplot(data,aes(x=current_term))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of Current_Term", 
+       x="Current_Term", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 63 processing_complete_date
+```{r}
+ggplot(data, aes(x=processing_complete_date)) +
+  geom_point(stat = "count")+
+  labs(title="Distribution of Processing_Complete_Date", 
+       x="Processing_Complete_Date", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 64 date_sent_for_gia_review
+# # Could create the length of time between data sent for gia review and processing complete date using variable 63 and 64
+```{r}
+ggplot(data, aes(x=date_sent_for_gia_review)) +
+  geom_point(stat = "count")+
+  labs(title="Distribution of Date_Sent_for_GIA_Review", 
+       x="Date_Sent_for_GIA_Review", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 65 gia_review_date (removing one obvious outlier)
+```{r}
+data%>%
+  filter(gia_review_date < "2020-01-01 UTC")%>%
+  ggplot(aes(x=gia_review_date)) +
+  geom_point(stat = "count")+
+  labs(title="Distribution of GIA_Review_Date", 
+       x="GIA_Review_Date", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 66 age
+```{r}
+data %>%
+  filter(age>=15)%>%
+  ggplot(aes(x=age))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of Age", 
+       x="Age", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 67 undergrad_institution_(self_reported)
+```{r}
+data%>%
+  group_by(`undergrad_institution_(self_reported)`)%>%
+  summarise(Count=n())%>%
+  arrange(-Count)
+```
+# 68,69, 70 Text variables, could not be used
+
+# 71 deposit_received
+```{r}
+ggplot(data,aes(x=deposit_received))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of Deposit_Received", 
+       x="Deposit_Received", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 72 ready_for_director_review
+```{r}
+ggplot(data,aes(x=ready_for_director_review))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of Ready_For_Director_Review", 
+       x="Ready_For_Director_Review", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 73 follow_up_required
+```{r}
+ggplot(data,aes(x=follow_up_required))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of Follow_Up_Required", 
+       x="Follow_Up_Required", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 74 90041_mi
+```{r}
+ggplot(data,aes(x=`90041_mi`))+
+  geom_histogram(fill="#999999")+
+  labs(title="Distribution of 90041_Mi", 
+       x="90041_Mi", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 75 91601_mi
+```{r}
+ggplot(data,aes(x=`91601_mi`))+
+  geom_histogram(fill="#999999")+
+  labs(title="Distribution of 91601_Mi", 
+       x="91601_Mi", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 76 92122_mi
+```{r}
+ggplot(data,aes(x=`92122_mi`))+
+  geom_histogram(fill="#999999")+
+  labs(title="Distribution of 92122_Mi", 
+       x="92122_Mi", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 77 94607_mi
+```{r}
+ggplot(data,aes(x=`94607_mi`))+
+  geom_histogram(fill="#999999")+
+  labs(title="Distribution of 94607_Mi", 
+       x="94607_Mi", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 79 last_60/90_gpa
+```{r}
+ggplot(data,aes(x=`last_60/90_gpa`))+
+  geom_histogram(fill="#999999")+
+  labs(title="Distribution of Last_60/90_GPA", 
+       x="Last_60/90_GPA", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# 80 graduate_gpa
+```{r}
+ggplot(data,aes(x=graduate_gpa))+
+  geom_histogram(fill="#999999")+
+  labs(title="Distribution of Graduate_GPA", 
+       x="Graduate_GPA", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+ # 81 temperature
+```{r}
+data[!is.na(data$temperature),]%>%
+  ggplot(aes(x=temperature))+
+  geom_bar(fill="#999999")+
+  labs(title="Distribution of Temperature", 
+       x="Temperature", 
+       y="Count")+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
